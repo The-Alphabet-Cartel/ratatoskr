@@ -1,0 +1,31 @@
+# ============================================================================
+# Ratatoskr - Docker Compose
+# ============================================================================
+# FILE VERSION: v1.0.0
+# Repository: https://github.com/the-alphabet-cartel/ratatoskr
+# Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+# ============================================================================
+
+services:
+  ratatoskr:
+    image: ghcr.io/the-alphabet-cartel/ratatoskr:latest
+    container_name: ratatoskr
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TOKEN_FILE: /run/secrets/ratatoskr_token
+    secrets:
+      - ratatoskr_token
+    volumes:
+      - /opt/bragi/bots/ratatoskr/logs:/app/logs
+      - /opt/bragi/bots/ratatoskr/data:/app/data
+    networks:
+      - bragi
+
+secrets:
+  ratatoskr_token:
+    file: ./secrets/ratatoskr_fluxer_token
+
+networks:
+  bragi:
+    external: true

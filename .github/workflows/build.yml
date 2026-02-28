@@ -10,8 +10,7 @@
 # Uses Docker layer caching to speed up builds and reduce resource usage.
 #
 # ============================================================================
-
-name: Build and Push Bot Skeleton
+name: Build and Push Ratatoskr
 
 on:
   push:
@@ -88,9 +87,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            APP_USER=nlp
-            APP_UID=1001
-            APP_GID=1001
+            DEFAULT_UID=1000
+            DEFAULT_GID=1000
 
       # =========================================================================
       # Summary
