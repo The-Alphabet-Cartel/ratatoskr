@@ -4,7 +4,7 @@
 
 # Ratatoskr
 
-Event scheduling and attendance tracking bot for [Joint Task Force Drauger](https://fluxer.gg/yGJfJH5C)'s Fluxer community.
+Event scheduling and attendance tracking bot for Joint Task Force Drauger's Fluxer community.
 
 Part of the [Bragi](https://github.com/the-alphabet-cartel/bragi) bot infrastructure.
 
