@@ -1,0 +1,36 @@
+{
+    "_metadata": {
+        "file_version": "v1.0.0",
+        "last_modified": "2026-02-28",
+        "bot": "ratatoskr",
+        "clean_architecture": "Compliant"
+    },
+
+    "logging": {
+        "level": "INFO",
+        "format": "human",
+        "file": "/app/logs/ratatoskr.log",
+        "console": true
+    },
+
+    "bot": {
+        "command_prefix": "!",
+        "guild_id": "",
+        "event_channel_id": "",
+        "command_staff_role_id": ""
+    },
+
+    "events": {
+        "cleanup_hours": 24,
+        "reminder_minutes_before": 15,
+        "dm_timeout_seconds": 300,
+        "timezone": "America/New_York",
+        "time_format_display": "%A, %B %d, %Y %H:%M",
+        "delete_command_messages": true,
+        "delete_non_event_messages": true
+    },
+
+    "database": {
+        "path": "/data/ratatoskr.db"
+    }
+}

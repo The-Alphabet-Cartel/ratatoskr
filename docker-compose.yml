@@ -5,27 +5,50 @@
 # Repository: https://github.com/the-alphabet-cartel/ratatoskr
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
+name: ratatoskr
+
+### Common Settings ###
+x-common: &common
+  restart: unless-stopped
+  networks:
+    - bragi-net
+
+### Common Environmental Variables ###
+x-env: &env
+  PGID: ${PGID:-1000}
+  PUID: ${PUID:-1000}
+  TZ: ${TZ:-America/Los_Angeles}
+
+### Common Healthcheck Settings ###
+x-health: &health
+  interval: 5s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+  start_interval: 30s
 
 services:
   ratatoskr:
     image: ghcr.io/the-alphabet-cartel/ratatoskr:latest
     container_name: ratatoskr
-    restart: unless-stopped
-    env_file: .env
+    <<: *common
     environment:
+      <<: *env
       TOKEN_FILE: /run/secrets/ratatoskr_token
+    env_file: .env
     secrets:
       - ratatoskr_token
     volumes:
-      - /opt/bragi/bots/ratatoskr/logs:/app/logs
-      - /opt/bragi/bots/ratatoskr/data:/app/data
-    networks:
-      - bragi
+      - /opt/bragi/ratatoskr/logs:/app/logs
+      - /opt/bragi/ratatoskr/data:/app/data
+      - /opt/bragi/ratatoskr/config:/app/src/config
+    healthcheck:
+      <<: *health
 
 secrets:
   ratatoskr_token:
     file: ./secrets/ratatoskr_fluxer_token
 
 networks:
-  bragi:
+  bragi-net:
     external: true

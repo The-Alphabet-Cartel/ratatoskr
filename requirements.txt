@@ -1,10 +1,13 @@
 # ============================================================================
 # Ratatoskr - Requirements
 # ============================================================================
-# FILE VERSION: v1.0.0
+# FILE VERSION: v1.1.0
 # Repository: https://github.com/the-alphabet-cartel/ratatoskr
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
 
 fluxer-py
 httpx
+aiosqlite
+python-dateutil
+pytz

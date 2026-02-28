@@ -1,16 +1,7 @@
 #!/usr/bin/env python3
 """
 ============================================================================
-Bragi: Bot Infrastructure for The Alphabet Cartel
-The Alphabet Cartel - https://discord.gg/alphabetcartel | alphabetcartel.net
-============================================================================
-
-MISSION - NEVER TO BE VIOLATED:
-    Welcome  → Greet and orient new members to our chosen family
-    Moderate → Support staff with tools that keep our space safe
-    Support  → Connect members to resources, information, and each other
-    Sustain  → Run reliably so our community always has what it needs
-
+Ratatoskr: Bot Infrastructure
 ============================================================================
 Docker entrypoint for Ratatoskr. Reads PUID/PGID from environment, adjusts
 the container user and group, fixes volume ownership, drops privileges, and

@@ -126,7 +126,7 @@ User types "!event"
 EVENT_CHANNEL_ID=
 
 # Guild ID for the JTF Drauger server
-GUILD_ID=
+RATATOSKR_GUILD_ID=
 
 # Role ID that gates event creation
 COMMAND_STAFF_ROLE_ID=

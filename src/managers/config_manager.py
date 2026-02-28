@@ -1,22 +1,13 @@
 """
 ============================================================================
-Bragi: Bot Infrastructure for The Alphabet Cartel
-The Alphabet Cartel - https://discord.gg/alphabetcartel | alphabetcartel.net
-============================================================================
-
-MISSION - NEVER TO BE VIOLATED:
-    Welcome  → Greet and orient new members to our chosen family
-    Moderate → Support staff with tools that keep our space safe
-    Support  → Connect members to resources, information, and each other
-    Sustain  → Run reliably so our community always has what it needs
-
+Ratatoskr: Bot Infrastructure
 ============================================================================
 ConfigManager for Ratatoskr. Loads configuration from JSON defaults, then
 overrides with .env values, then overrides sensitive values from Docker
 Secrets. Implements the three-layer config stack (Rule #4 / Rule #7).
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
-LAST MODIFIED: 2026-02-27
+FILE VERSION: v1.1.0
+LAST MODIFIED: 2026-02-28
 BOT: Ratatoskr
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -77,9 +68,12 @@ class ConfigManager:
             "RATATOSKR_LOG_FILE": ("logging", "file"),
             # --- Bot Behavior (shared across all bots) ---
             "COMMAND_PREFIX": ("bot", "command_prefix"),
-            "GUILD_ID": ("bot", "guild_id"),
-            # TODO: Add bot-specific env var mappings below
-            # "{BOT_PREFIX}_SETTING_NAME": ("section", "key"),
+            "RATATOSKR_GUILD_ID": ("bot", "guild_id"),
+            # --- Ratatoskr-Specific ---
+            "EVENT_CHANNEL_ID": ("bot", "event_channel_id"),
+            "COMMAND_STAFF_ROLE_ID": ("bot", "command_staff_role_id"),
+            "DB_PATH": ("database", "path"),
+            "TZ": ("events", "timezone"),
         }
         for env_key, (section, key) in env_map.items():
             value = os.environ.get(env_key)
@@ -139,6 +133,29 @@ class ConfigManager:
     def get_token(self) -> str:
         """Convenience accessor for the bot token."""
         return self.get("bot", "token", "")
+
+    def load_roles_config(
+        self, config_path: str = "/app/src/config/roles_config.json"
+    ) -> dict:
+        """Load the roles_config.json file. Separate from main config for hot-reload."""
+        path = Path(config_path)
+        if not path.exists():
+            log.error(f"❌ Roles config not found at {config_path}")
+            return {
+                "signup_roles": [],
+                "declined": {"label": "Declined", "emoji": "❌"},
+            }
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            log.debug(f"🔍 Loaded roles config from {config_path}")
+            return data
+        except (json.JSONDecodeError, OSError) as e:
+            log.error(f"❌ Failed to load roles config: {e}")
+            return {
+                "signup_roles": [],
+                "declined": {"label": "Declined", "emoji": "❌"},
+            }
 
 
 def create_config_manager(

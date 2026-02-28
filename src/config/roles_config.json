@@ -1,0 +1,78 @@
+{
+    "_metadata": {
+        "file_version": "v1.0.0",
+        "last_modified": "2026-02-28",
+        "bot": "ratatoskr",
+        "description": "Role-to-emoji mapping for event signups. Array order = display order in event posts."
+    },
+    "signup_roles": [
+        {
+            "key": "operator",
+            "label": "Operator",
+            "emoji": "🇦",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "specialist",
+            "label": "Specialist",
+            "emoji": "🇧",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "element_lead",
+            "label": "EL+TL",
+            "emoji": "🇨",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "recruit",
+            "label": "Recruit",
+            "emoji": "🇩",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "214soar",
+            "label": "214 SOAR",
+            "emoji": "🇪",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "tacp",
+            "label": "TACP",
+            "emoji": "🇫",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "goblin",
+            "label": "Goblin",
+            "emoji": "🇬",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        },
+        {
+            "key": "hq",
+            "label": "HQ",
+            "emoji": "🇭",
+            "role_id": "",
+            "role_ids_accepted": [],
+            "max_slots": null
+        }
+    ],
+    "declined": {
+        "label": "Declined",
+        "emoji": "❌"
+    }
+}
