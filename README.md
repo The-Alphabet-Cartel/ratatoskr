@@ -299,8 +299,8 @@ See [docs/design.md](docs/design.md) for the full design specification including
 
 ## Naming
 
-Ratatoskr is the squirrel in Norse mythology that runs up and down Yggdrasil, the world tree, carrying messages between the eagle at the top and the serpent at the roots. As the scheduling bot, Ratatoskr carries operation briefings from Command Staff to the community and ferries attendance confirmations back — the messenger that keeps the unit coordinated. Pairs with [Prism](https://github.com/the-alphabet-cartel/prism) (onboarding), [Portia](https://github.com/the-alphabet-cartel/portia) (voice channels), and [Puck](https://github.com/the-alphabet-cartel/puck) (stream monitor) in the Bragi bot family.
+Ratatoskr is the squirrel in Norse mythology that runs up and down Yggdrasil, the world tree, carrying messages between the eagle at the top and the serpent at the roots. As the scheduling bot, Ratatoskr carries operation briefings from Command Staff to the community and ferries attendance confirmations back — the messenger that keeps the unit coordinated.
 
 ---
 
-**Built with care for chosen family** 🏳️‍🌈
+**For The Fun Of It**
