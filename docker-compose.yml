@@ -11,7 +11,7 @@ name: ratatoskr
 x-common: &common
   restart: unless-stopped
   networks:
-    - bragi-net
+    - ratatoskr-net
 
 ### Common Environmental Variables ###
 x-env: &env
@@ -50,5 +50,5 @@ secrets:
     file: ./secrets/ratatoskr_fluxer_token
 
 networks:
-  bragi-net:
-    external: true
+  ratatoskr-net:
+    driver: bridge
