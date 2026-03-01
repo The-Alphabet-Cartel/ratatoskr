@@ -303,4 +303,4 @@ Ratatoskr is the squirrel in Norse mythology that runs up and down Yggdrasil, th
 
 ---
 
-<p align="center"><img src="images/Ratatoskr-PFP.png" alt="Ratatoskr" width="100" /><br /><b>For The Fun Of It</b></p>
+<p align="center"><img src="images/JFTD.png" alt="Ratatoskr" width="100" /><br /><b>For The Fun Of It</b></p>
