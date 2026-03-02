@@ -39,9 +39,9 @@ services:
     secrets:
       - ratatoskr_token
     volumes:
-      - /opt/bragi/ratatoskr/logs:/app/logs
-      - /opt/bragi/ratatoskr/data:/app/data
-      - /opt/bragi/ratatoskr/config:/app/src/config
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/src/config
     healthcheck:
       <<: *health
 
