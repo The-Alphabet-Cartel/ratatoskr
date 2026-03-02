@@ -23,7 +23,7 @@ from src.managers.logging_config_manager import LoggingConfigManager
 class ChannelGuardHandler:
     """Deletes non-bot messages from the configured event channel.
 
-    Any message in EVENT_CHANNEL_ID that was not sent by the bot
+    Any message in RATATOSKR_EVENT_CHANNEL_ID that was not sent by the bot
     is deleted immediately. This keeps the event channel as a clean
     feed of operation postings only — no chatter, no stray commands.
     """
