@@ -68,11 +68,11 @@ class ConfigManager:
             "RATATOSKR_LOG_FILE": ("logging", "file"),
             # --- Bot Behavior (shared across all bots) ---
             "COMMAND_PREFIX": ("bot", "command_prefix"),
-            "RATATOSKR_GUILD_ID": ("bot", "guild_id"),
             # --- Ratatoskr-Specific ---
-            "EVENT_CHANNEL_ID": ("bot", "event_channel_id"),
-            "COMMAND_STAFF_ROLE_ID": ("bot", "command_staff_role_id"),
-            "DB_PATH": ("database", "path"),
+            "RATATOSKR_GUILD_ID": ("bot", "guild_id"),
+            "RATATOSKR_EVENT_CHANNEL_ID": ("bot", "event_channel_id"),
+            "RATATOSKR_COMMAND_STAFF_ROLE_ID": ("bot", "command_staff_role_id"),
+            "RATATOSKR_DB_PATH": ("database", "path"),
             "TZ": ("events", "timezone"),
         }
         for env_key, (section, key) in env_map.items():
