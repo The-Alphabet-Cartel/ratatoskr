@@ -15,6 +15,7 @@ from src.handlers.event_create import EventCreateHandler
 from src.handlers.event_manage import EventManageHandler
 from src.handlers.reaction_handler import ReactionHandler
 from src.handlers.reminder import ReminderHandler
+from src.handlers.utility import UtilityHandler
 
 __all__ = [
     "ChannelGuardHandler",
@@ -22,4 +23,5 @@ __all__ = [
     "EventManageHandler",
     "ReactionHandler",
     "ReminderHandler",
+    "UtilityHandler",
 ]
