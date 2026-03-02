@@ -29,6 +29,7 @@ from src.handlers.event_create import EventCreateHandler
 from src.handlers.event_manage import EventManageHandler
 from src.handlers.reaction_handler import ReactionHandler
 from src.handlers.reminder import ReminderHandler
+from src.handlers.utility import UtilityHandler
 
 
 # =============================================================================
@@ -134,6 +135,7 @@ def main() -> None:
         bot, config_manager, logging_manager, db, roles_config
     )
     reminder = ReminderHandler(bot, config_manager, logging_manager, db)
+    utility = UtilityHandler(bot, config_manager, logging_manager)
 
     # -------------------------------------------------------------------------
     # Command prefix
@@ -184,6 +186,8 @@ def main() -> None:
                 await event_manage.handle_edit(message)
             elif cmd == "delete":
                 await event_manage.handle_delete(message)
+            elif cmd == "roles":
+                await utility.handle_roles(message)
             # Unknown commands are silently ignored
 
     @bot.event
