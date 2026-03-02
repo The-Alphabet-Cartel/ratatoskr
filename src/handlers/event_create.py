@@ -40,7 +40,7 @@ class EventCreateHandler:
            - Step 1: Operation name (title)
            - Step 2: Description / briefing
            - Step 3: Date and time (24-hour format)
-        4. Bot posts the formatted event to EVENT_CHANNEL_ID
+        4. Bot posts the formatted event to RATATOSKR_EVENT_CHANNEL_ID
         5. Bot seeds the post with all role emoji reactions
         6. Bot DMs the user a confirmation with a link
     """
@@ -290,7 +290,7 @@ class EventCreateHandler:
     async def _is_command_staff(self, message: fluxer.Message) -> bool:
         """Check if the message author has the Command Staff role."""
         if not self._command_staff_role_id:
-            self.log.warning("COMMAND_STAFF_ROLE_ID not set — denying all")
+            self.log.warning("RATATOSKR_COMMAND_STAFF_ROLE_ID not set — denying all")
             return False
 
         try:
