@@ -123,13 +123,13 @@ User types "!event"
 # TOKEN loaded via Docker Secret: /run/secrets/ratatoskr_token
 
 # Channel where events are POSTED (not where commands are typed)
-EVENT_CHANNEL_ID=
+RATATOSKR_EVENT_CHANNEL_ID=
 
 # Guild ID for the JTF Drauger server
 RATATOSKR_GUILD_ID=
 
 # Role ID that gates event creation
-COMMAND_STAFF_ROLE_ID=
+RATATOSKR_COMMAND_STAFF_ROLE_ID=
 
 # Command prefix
 COMMAND_PREFIX=!
@@ -138,7 +138,7 @@ COMMAND_PREFIX=!
 LOG_LEVEL=INFO
 
 # SQLite database path (inside container, mounted volume)
-DB_PATH=/data/ratatoskr.db
+RATATOSKR_DB_PATH=/data/ratatoskr.db
 ```
 
 ### 3.2 `roles_config.json`
@@ -291,7 +291,7 @@ CREATE TABLE signups (
    - **Step 3:** "When is the operation? (Use 24-hour format, e.g., 'Sunday, March 1, 2026 14:00')"
 3. User responds to each prompt in DM
 4. Bot parses the time using natural language processing (24-hour format enforced)
-5. Bot posts the formatted event to the configured `EVENT_CHANNEL_ID`
+5. Bot posts the formatted event to the configured `RATATOSKR_EVENT_CHANNEL_ID`
 6. Bot adds all configured emoji reactions to the posted message (in order from `roles_config.json`, then the declined emoji)
 7. Bot saves the event to SQLite
 8. Bot DMs the creator: "Operation posted successfully! [link to message]"
@@ -407,13 +407,13 @@ When a user adds a new reaction (e.g., switching from Specialist to Declined):
 
 ### 5.4 Channel Guard
 
-The event channel (`EVENT_CHANNEL_ID`) is kept clean:
+The event channel (`RATATOSKR_EVENT_CHANNEL_ID`) is kept clean:
 
 - **Any message not from the bot** is deleted immediately
 - This includes `!event` commands typed in the event channel
 - This includes casual messages, questions, etc.
 - **Bot messages that are event posts** are preserved
-- **Implementation:** In `on_message`, if `message.channel.id == EVENT_CHANNEL_ID` and `message.author.id != bot.user.id`, delete the message
+- **Implementation:** In `on_message`, if `message.channel.id == RATATOSKR_EVENT_CHANNEL_ID` and `message.author.id != bot.user.id`, delete the message
 
 ### 5.5 Event Edit (`!edit`)
 
@@ -481,7 +481,7 @@ async def on_message(message: fluxer.Message) -> None:
         return
 
     # Channel guard — delete non-bot messages in event channel
-    if str(message.channel.id) == config.get("EVENT_CHANNEL_ID"):
+    if str(message.channel.id) == config.get("RATATOSKR_EVENT_CHANNEL_ID"):
         try:
             await message.delete()
         except Exception:
