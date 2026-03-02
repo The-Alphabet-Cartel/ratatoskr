@@ -80,9 +80,9 @@ Copy `.env.template` to `.env` and configure:
 | `RATATOSKR_LOG_FILE` | — | Optional log file path |
 | `COMMAND_PREFIX` | `!` | Prefix for staff commands |
 | `RATATOSKR_GUILD_ID` | — | Fluxer guild ID (**required**) |
-| `EVENT_CHANNEL_ID` | — | Channel where events are posted (**required**) |
-| `COMMAND_STAFF_ROLE_ID` | — | Role that can create/manage events (**required**) |
-| `DB_PATH` | `/data/ratatoskr.db` | SQLite database path inside container |
+| `RATATOSKR_EVENT_CHANNEL_ID` | — | Channel where events are posted (**required**) |
+| `RATATOSKR_COMMAND_STAFF_ROLE_ID` | — | Role that can create/manage events (**required**) |
+| `RATATOSKR_DB_PATH` | `/data/ratatoskr.db` | SQLite database path inside container |
 | `PUID` | `1000` | Container user ID |
 | `PGID` | `1000` | Container group ID |
 
@@ -140,7 +140,7 @@ cd ratatoskr
 
 # 2. Copy and configure environment
 cp .env.template .env
-# Edit .env — set RATATOSKR_GUILD_ID, EVENT_CHANNEL_ID, and COMMAND_STAFF_ROLE_ID
+# Edit .env — set RATATOSKR_GUILD_ID, RATATOSKR_EVENT_CHANNEL_ID, and RATATOSKR_COMMAND_STAFF_ROLE_ID
 
 # 3. Configure role-to-emoji mapping
 # Edit src/config/roles_config.json — set role_id for each unit
