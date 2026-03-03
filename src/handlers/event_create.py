@@ -28,6 +28,7 @@ from src.managers.database_manager import DatabaseManager
 from src.managers.logging_config_manager import LoggingConfigManager
 from src.utils.event_formatter import get_all_reaction_emoji, render_event_post
 from src.utils.time_parser import TimeParseError, parse_event_time
+from src.utils.dm_collector import dm_collector
 
 
 class EventCreateHandler:
@@ -209,30 +210,15 @@ class EventCreateHandler:
         return None
 
     async def _wait_for_dm(self, user: fluxer.User) -> Optional[str]:
-        """Wait for a DM response from the user.
+        """Wait for a DM response from the user via the shared DMCollector.
 
-        TODO: This is the biggest Fluxer unknown. fluxer-py doesn't have
-        bot.wait_for() like discord.py. Options:
-          1. If fluxer-py supports wait_for: use it with a DM check
-          2. If not: register a temporary on_message filter in the
-             dispatcher that captures DMs from this user, using an
-             asyncio.Event or asyncio.Queue to bridge the gap.
-          3. Worst case: poll the DM channel for new messages.
-
-        For now, this is stubbed with the wait_for pattern. We'll adapt
-        after empirical testing on Fluxer.
+        The on_message dispatcher in main.py feeds DMs into the collector.
+        This method blocks until a DM arrives or the timeout expires.
         """
-
-        def check(m):
-            # Message is from the same user AND is a DM
-            return m.author.id == user.id and getattr(m, "guild_id", None) is None
-
         try:
-            # TODO: Confirm bot.wait_for exists in fluxer-py
-            response = await self.bot.wait_for(
-                "message", check=check, timeout=self._dm_timeout
+            return await dm_collector.wait_for_dm(
+                str(user.id), timeout=self._dm_timeout
             )
-            return response.content.strip()
         except asyncio.TimeoutError:
             raise
 

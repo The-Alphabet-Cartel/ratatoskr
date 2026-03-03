@@ -31,6 +31,7 @@ from src.handlers.event_manage import EventManageHandler
 from src.handlers.reaction_handler import ReactionHandler
 from src.handlers.reminder import ReminderHandler
 from src.handlers.utility import UtilityHandler
+from src.utils.dm_collector import dm_collector
 
 
 # =============================================================================
@@ -196,6 +197,15 @@ def main() -> None:
         # Dedup guard — fluxer-py fires events twice
         dedup_key = f"msg-{message.id}"
         if _is_duplicate(dedup_key):
+            return
+
+        # DM routing — feed DMs to the collector for wizard handlers.
+        # If a handler is waiting for this user's DM, consume it and stop.
+        # guild_id is None for DMs in fluxer-py.
+        if getattr(message, "guild_id", None) is None:
+            if dm_collector.feed(message):
+                return  # A handler consumed this DM
+            # No handler waiting — ignore unsolicited DMs
             return
 
         # Channel guard — delete non-bot messages from event channel

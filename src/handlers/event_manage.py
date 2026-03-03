@@ -25,6 +25,7 @@ from src.managers.database_manager import DatabaseManager
 from src.managers.logging_config_manager import LoggingConfigManager
 from src.utils.event_formatter import render_event_post
 from src.utils.time_parser import TimeParseError, parse_event_time
+from src.utils.dm_collector import dm_collector
 
 
 class EventManageHandler:
@@ -275,16 +276,11 @@ class EventManageHandler:
             return False
 
     async def _wait_for_dm(self, user) -> Optional[str]:
-        """Wait for a DM response. Same pattern as event_create."""
-
-        def check(m):
-            return m.author.id == user.id and getattr(m, "guild_id", None) is None
-
+        """Wait for a DM response via the shared DMCollector."""
         try:
-            response = await self.bot.wait_for(
-                "message", check=check, timeout=self._dm_timeout
+            return await dm_collector.wait_for_dm(
+                str(user.id), timeout=self._dm_timeout
             )
-            return response.content.strip()
         except asyncio.TimeoutError:
             raise
 
