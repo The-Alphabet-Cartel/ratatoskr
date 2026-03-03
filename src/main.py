@@ -24,6 +24,7 @@ import fluxer
 from src.managers.config_manager import create_config_manager
 from src.managers.database_manager import create_database_manager
 from src.managers.logging_config_manager import create_logging_config_manager
+from src.managers.config_watcher import create_config_watcher
 from src.handlers.channel_guard import ChannelGuardHandler
 from src.handlers.event_create import EventCreateHandler
 from src.handlers.event_manage import EventManageHandler
@@ -142,6 +143,33 @@ def main() -> None:
     # -------------------------------------------------------------------------
     prefix = config_manager.get("bot", "command_prefix", "!")
 
+    # -------------------------------------------------------------------------
+    # Config watcher — hot-reload config files without container restart
+    # -------------------------------------------------------------------------
+    config_watcher = create_config_watcher(config_dir="/app/src/config")
+
+    # Handlers that hold a roles_config reference and need updating on reload
+    _roles_config_handlers = [event_create, event_manage, reaction_handler]
+
+    async def _on_config_change(filename: str) -> None:
+        """Callback fired by ConfigWatcher when a JSON file is modified."""
+        if filename == "roles_config.json":
+            new_roles = config_manager.load_roles_config()
+            for handler in _roles_config_handlers:
+                handler.roles_config = new_roles
+            role_count = len(new_roles.get("signup_roles", []))
+            log.info(f"Hot-reloaded roles_config.json — {role_count} signup roles")
+
+        elif filename == "ratatoskr_config.json":
+            # Main config reload is trickier — env/secrets still override.
+            # For now, log and advise restart for non-roles config changes.
+            log.warning(
+                f"{filename} changed — restart the container to apply "
+                f"main config changes (roles_config hot-reloads automatically)"
+            )
+
+    config_watcher.on_change(_on_config_change)
+
     # =========================================================================
     # Event dispatchers — ONE handler per event type (fluxer-py limitation)
     # =========================================================================
@@ -155,6 +183,7 @@ def main() -> None:
 
         # Start background tasks
         await reminder.start()
+        await config_watcher.start()
 
         log.success("Ratatoskr is ready")
 
