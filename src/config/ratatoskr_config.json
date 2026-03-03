@@ -31,6 +31,6 @@
     },
 
     "database": {
-        "path": "/data/ratatoskr.db"
+        "path": "/app/data/ratatoskr.db"
     }
 }
