@@ -15,7 +15,7 @@ CLEAN ARCHITECTURE: Compliant
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from dateutil import parser as dateutil_parser
@@ -57,15 +57,20 @@ def parse_event_time(
         raise TimeParseError("No time provided. Please enter a date and time.")
 
     local_tz = _get_timezone(tz_name)
+    now_local = datetime.now(local_tz)
 
-    try:
-        # dateutil.parser.parse handles most natural language formats
-        parsed = dateutil_parser.parse(cleaned, fuzzy=True)
-    except (ValueError, OverflowError) as e:
-        raise TimeParseError(
-            f"Could not understand '{cleaned}' as a date/time. "
-            f"Try a format like 'Sunday, March 1, 2026 14:00'."
-        ) from e
+    # Pre-process relative terms that dateutil doesn't understand
+    parsed = _try_relative_parse(cleaned, now_local, local_tz)
+
+    if parsed is None:
+        # Fall back to dateutil for absolute dates
+        try:
+            parsed = dateutil_parser.parse(cleaned, fuzzy=True)
+        except (ValueError, OverflowError) as e:
+            raise TimeParseError(
+                f"Could not understand '{cleaned}' as a date/time. "
+                f"Try a format like 'Sunday, March 1, 2026 14:00'."
+            ) from e
 
     # If no timezone info was provided, assume the configured local timezone
     if parsed.tzinfo is None:
@@ -120,6 +125,73 @@ def get_countdown(utc_dt: datetime) -> str:
         return f"in {minutes} minutes"
     else:
         return "starting soon"
+
+
+_WEEKDAYS = {
+    "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+    "friday": 4, "saturday": 5, "sunday": 6,
+    "mon": 0, "tue": 1, "wed": 2, "thu": 3,
+    "fri": 4, "sat": 5, "sun": 6,
+}
+
+# Matches "tomorrow 17:45" or "next wednesday, 19:30" etc.
+_RELATIVE_RE = re.compile(
+    r"^(tomorrow|next\s+week|next\s+\w+)"
+    r"[,\s]+(\d{1,2}:\d{2})"
+    r"\s*$",
+    re.IGNORECASE,
+)
+
+
+def _try_relative_parse(
+    cleaned: str,
+    now_local: datetime,
+    local_tz: pytz.BaseTzInfo,
+) -> Optional[datetime]:
+    """Attempt to parse relative time expressions.
+
+    Handles:
+        - "tomorrow HH:MM"
+        - "next week HH:MM" (same weekday, +7 days)
+        - "next <weekday> HH:MM"
+
+    Returns a tz-aware local datetime, or None if no relative pattern matched.
+    """
+    match = _RELATIVE_RE.match(cleaned.strip())
+    if not match:
+        return None
+
+    relative_part = match.group(1).strip().lower()
+    time_part = match.group(2).strip()
+
+    # Parse the time portion
+    try:
+        hour, minute = map(int, time_part.split(":"))
+    except ValueError:
+        return None
+
+    if relative_part == "tomorrow":
+        target_date = now_local.date() + timedelta(days=1)
+    elif relative_part == "next week":
+        target_date = now_local.date() + timedelta(days=7)
+    elif relative_part.startswith("next "):
+        weekday_name = relative_part[5:].strip()
+        target_weekday = _WEEKDAYS.get(weekday_name)
+        if target_weekday is None:
+            return None
+        # Find the next occurrence of that weekday (always at least 1 day out)
+        days_ahead = (target_weekday - now_local.weekday()) % 7
+        if days_ahead == 0:
+            days_ahead = 7  # "next Monday" when today is Monday = +7
+        target_date = now_local.date() + timedelta(days=days_ahead)
+    else:
+        return None
+
+    # Combine date + time in local timezone
+    naive_dt = datetime.combine(target_date, datetime.min.time().replace(
+        hour=hour, minute=minute
+    ))
+    return local_tz.localize(naive_dt)
 
 
 def _get_timezone(tz_name: str) -> pytz.BaseTzInfo:

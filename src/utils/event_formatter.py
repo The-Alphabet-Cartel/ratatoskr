@@ -84,8 +84,8 @@ def render_event_post(
 
         if count > 0:
             lines.append(f"{emoji} {label} ({count})")
-            for s in role_signups:
-                lines.append(f"  {s.display_name}")
+            names = ", ".join(s.display_name for s in role_signups)
+            lines.append(f"  {names}")
         else:
             lines.append(f"{emoji} {label}")
             lines.append("  —")
@@ -100,8 +100,8 @@ def render_event_post(
 
     if declined_count > 0:
         lines.append(f"{declined_emoji} {declined_label} ({declined_count})")
-        for s in declined_signups:
-            lines.append(f"  {s.display_name}")
+        names = ", ".join(s.display_name for s in declined_signups)
+        lines.append(f"  {names}")
     else:
         lines.append(f"{declined_emoji} {declined_label}")
         lines.append("  —")
