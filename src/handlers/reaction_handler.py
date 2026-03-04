@@ -93,12 +93,6 @@ class ReactionHandler:
         emoji = str(payload.emoji)
 
         self.log.debug(f"Reaction add: msg={message_id} user={user_id} emoji={emoji}")
-        # PROBE: Log emoji type and attributes for custom emoji discovery
-        self.log.debug(
-            f"EMOJI PROBE: type={type(payload.emoji).__name__} "
-            f"repr={repr(payload.emoji)} "
-            f"attrs={[a for a in dir(payload.emoji) if not a.startswith('_')]}"
-        )
 
         # 1. Is this message a tracked event?
         event = await self.db.get_event_by_message_id(message_id)
