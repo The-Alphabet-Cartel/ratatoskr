@@ -106,13 +106,9 @@ class ReactionHandler:
             await self._remove_reaction(message_id, emoji, user_id)
             return
 
-        # 3. Block Command Staff from reacting
-        if await self._is_command_staff(user_id):
-            await self._remove_reaction(message_id, emoji, user_id)
-            self.log.debug(f"Blocked Command Staff reaction from user {user_id}")
-            return
-
-        # 4. For role categories (not Declined): enforce role membership
+        # 3. For role categories (not Declined): enforce role membership
+        #    Command Staff are NOT blocked — they sign up like anyone else,
+        #    subject to the same role requirements.
         if role_key != "declined":
             if not await self._user_has_role(user_id, role_key):
                 await self._remove_reaction(message_id, emoji, user_id)
