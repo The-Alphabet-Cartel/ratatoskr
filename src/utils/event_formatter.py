@@ -5,8 +5,8 @@ Ratatoskr: Bot Infrastructure
 Event post formatter for Ratatoskr. Renders the event message text from
 an Event, its signups, and the roles config. No fluxer dependency.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
-LAST MODIFIED: 2026-02-28
+FILE VERSION: v1.1.0
+LAST MODIFIED: 2026-03-03
 BOT: Ratatoskr
 CLEAN ARCHITECTURE: Compliant
 ============================================================================
@@ -108,6 +108,7 @@ def render_event_post(
     lines.append("")
 
     # Footer
+    lines.append(f"📌 Event ID: {event.id}")
     if creator_display_name:
         lines.append(f"Created by {creator_display_name}")
     lines.append("═══════════════════════════════════════")
