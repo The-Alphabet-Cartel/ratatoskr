@@ -227,38 +227,62 @@ def main() -> None:
                 await event_manage.handle_delete(message)
             elif cmd == "roles":
                 await utility.handle_roles(message)
+            elif cmd == "probe":
+                # DIAGNOSTIC: Inspect GuildMember attributes
+                # Usage: !probe
+                # REMOVE after discovery
+                try:
+                    guild = await bot.fetch_guild(
+                        int(config_manager.get("bot", "guild_id", "0"))
+                    )
+                    member = await guild.fetch_member(message.author.id)
+                    attrs = [a for a in dir(member) if not a.startswith("_")]
+                    log.warning(f"🔬 GuildMember attrs: {attrs}")
+                    # Try common name attributes
+                    for attr in ["username", "name", "display_name", "nick", "global_name", "user"]:
+                        val = getattr(member, attr, "N/A")
+                        log.warning(f"🔬   member.{attr} = {val!r}")
+                        if attr == "user" and val != "N/A":
+                            user_attrs = [a for a in dir(val) if not a.startswith("_")]
+                            log.warning(f"🔬   member.user attrs: {user_attrs}")
+                            for ua in ["username", "name", "display_name", "global_name", "id"]:
+                                log.warning(f"🔬     member.user.{ua} = {getattr(val, ua, 'N/A')!r}")
+                    await message.reply(f"Probe logged — check container logs")
+                except Exception as e:
+                    log.error(f"Probe failed: {e}")
+                    await message.reply(f"Probe error: {e}")
             # Unknown commands are silently ignored
 
-    @bot.event
-    async def on_reaction_add(reaction, user) -> None:
-        """Dispatcher for reaction add events.
-
-        TODO: UNCONFIRMED SIGNATURE — the parameter types/names may
-        differ in fluxer-py. Adapt after empirical testing.
-        """
-        if hasattr(user, "bot") and user.bot:
-            return
-
-        dedup_key = f"radd-{reaction.message.id}-{user.id}-{reaction.emoji}"
-        if _is_duplicate(dedup_key):
-            return
-
-        await reaction_handler.handle_add(reaction, user)
+    # =========================================================================
+    # DIAGNOSTIC: Reaction event discovery
+    # fluxer-py does NOT fire on_reaction_add — we need to find the real name.
+    # Register multiple candidates; whichever fires tells us the answer.
+    # Also probe GuildMember attributes for the .username fix.
+    # REMOVE THIS BLOCK after discovery and replace with real handlers.
+    # =========================================================================
 
     @bot.event
-    async def on_reaction_remove(reaction, user) -> None:
-        """Dispatcher for reaction remove events.
+    async def on_reaction_add(*args, **kwargs) -> None:
+        log.warning(f"🔬 PROBE: on_reaction_add fired! args={len(args)} types={[type(a).__name__ for a in args]} kwargs={list(kwargs.keys())}")
+        for i, arg in enumerate(args):
+            log.warning(f"🔬   arg[{i}] ({type(arg).__name__}): {dir(arg)}")
 
-        TODO: UNCONFIRMED SIGNATURE — same caveat as on_reaction_add.
-        """
-        if hasattr(user, "bot") and user.bot:
-            return
+    @bot.event
+    async def on_message_reaction_add(*args, **kwargs) -> None:
+        log.warning(f"🔬 PROBE: on_message_reaction_add fired! args={len(args)} types={[type(a).__name__ for a in args]} kwargs={list(kwargs.keys())}")
+        for i, arg in enumerate(args):
+            log.warning(f"🔬   arg[{i}] ({type(arg).__name__}): {dir(arg)}")
 
-        dedup_key = f"rrem-{reaction.message.id}-{user.id}-{reaction.emoji}"
-        if _is_duplicate(dedup_key):
-            return
+    @bot.event
+    async def on_raw_reaction_add(*args, **kwargs) -> None:
+        log.warning(f"🔬 PROBE: on_raw_reaction_add fired! args={len(args)} types={[type(a).__name__ for a in args]} kwargs={list(kwargs.keys())}")
+        for i, arg in enumerate(args):
+            log.warning(f"🔬   arg[{i}] ({type(arg).__name__}): {dir(arg)}")
 
-        await reaction_handler.handle_remove(reaction, user)
+    # Also probe GuildMember attributes when !roles runs
+    @bot.event
+    async def on_guild_member_add(*args, **kwargs) -> None:
+        log.warning(f"🔬 PROBE: on_guild_member_add fired! args={len(args)}")
 
     # =========================================================================
     # Start the bot
