@@ -73,6 +73,7 @@ class ConfigManager:
             "RATATOSKR_EVENT_CHANNEL_ID": ("bot", "event_channel_id"),
             "RATATOSKR_COMMAND_STAFF_ROLE_ID": ("bot", "command_staff_role_id"),
             "RATATOSKR_DB_PATH": ("database", "path"),
+            "RATATOSKR_DM_TIMEOUT_DESCRIPTION": ("events", "dm_timeout_description_seconds"),
             "TZ": ("events", "timezone"),
         }
         for env_key, (section, key) in env_map.items():

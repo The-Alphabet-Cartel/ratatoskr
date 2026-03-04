@@ -24,6 +24,7 @@
         "cleanup_hours": 24,
         "reminder_minutes_before": 15,
         "dm_timeout_seconds": 300,
+        "dm_timeout_description_seconds": 600,
         "timezone": "America/New_York",
         "time_format_display": "%A, %B %d, %Y %H:%M",
         "delete_command_messages": true,

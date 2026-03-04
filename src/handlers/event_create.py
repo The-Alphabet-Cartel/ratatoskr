@@ -60,6 +60,9 @@ class EventCreateHandler:
         self.db = db
         self.roles_config = roles_config
         self._dm_timeout = self.config.get_int("events", "dm_timeout_seconds", 300)
+        self._dm_timeout_description = max(180, min(600, self.config.get_int(
+            "events", "dm_timeout_description_seconds", 600
+        )))
         self._tz_name = self.config.get("events", "timezone", "America/New_York")
         self._time_format = self.config.get(
             "events", "time_format_display", "%A, %B %d, %Y %H:%M"
@@ -161,12 +164,13 @@ class EventCreateHandler:
             return None
 
         # Step 2: Description
+        desc_minutes = int(self._dm_timeout_description / 60)
         await user.send(
             "**Step 2/3 — Briefing / Description**\n"
-            "Enter the operation briefing or description.\n\n"
+            f"Enter the operation briefing or description. ({desc_minutes} min timeout)\n\n"
             "_Type `cancel` to abort._"
         )
-        description = await self._wait_for_dm(user)
+        description = await self._wait_for_dm(user, timeout=self._dm_timeout_description)
         if description is None or description.lower() == "cancel":
             await user.send("❌ Event creation cancelled.")
             return None
@@ -209,15 +213,21 @@ class EventCreateHandler:
         await user.send("❌ Too many failed attempts. Run `!event` to start over.")
         return None
 
-    async def _wait_for_dm(self, user: fluxer.User) -> Optional[str]:
+    async def _wait_for_dm(
+        self, user: fluxer.User, timeout: float | None = None
+    ) -> Optional[str]:
         """Wait for a DM response from the user via the shared DMCollector.
 
         The on_message dispatcher in main.py feeds DMs into the collector.
         This method blocks until a DM arrives or the timeout expires.
+
+        Args:
+            user: The user to wait for.
+            timeout: Override timeout in seconds. Defaults to _dm_timeout.
         """
         try:
             return await dm_collector.wait_for_dm(
-                str(user.id), timeout=self._dm_timeout
+                str(user.id), timeout=timeout or self._dm_timeout
             )
         except asyncio.TimeoutError:
             raise
