@@ -71,18 +71,10 @@ class EventManageHandler:
                 pass
             return
 
-        event_id = parts[1]
-        try:
-            event_id_int = int(event_id)
-        except ValueError:
-            try:
-                await message.author.send(f"⚠️ '{event_id}' is not a valid event ID.")
-            except Exception:
-                pass
-            return
+        event_id = parts[1].strip()
 
         # Fetch event
-        event = await self.db.get_event_by_id(event_id_int)
+        event = await self.db.get_event_by_id(event_id)
         if event is None:
             try:
                 await message.author.send(f"⚠️ Event #{event_id} not found or expired.")
@@ -160,7 +152,7 @@ class EventManageHandler:
             await self._re_render_event(event.id)
             await author.send(f"✅ Event #{event.id} updated!")
             self.log.info(
-                f"Event #{event.id} edited by {author.username}: {list(updates.keys())}"
+                f"Event #{event.id} edited by {getattr(author, 'username', str(author))}: {list(updates.keys())}"
             )
 
         except asyncio.TimeoutError:
@@ -189,17 +181,9 @@ class EventManageHandler:
                 pass
             return
 
-        event_id = parts[1]
-        try:
-            event_id_int = int(event_id)
-        except ValueError:
-            try:
-                await message.author.send(f"⚠️ '{event_id}' is not a valid event ID.")
-            except Exception:
-                pass
-            return
+        event_id = parts[1].strip()
 
-        event = await self.db.get_event_by_id(event_id_int)
+        event = await self.db.get_event_by_id(event_id)
         if event is None:
             try:
                 await message.author.send(f"⚠️ Event #{event_id} not found or expired.")
@@ -242,7 +226,7 @@ class EventManageHandler:
             await self.db.delete_signups_for_event(event.id)
             await self.db.mark_event_expired(event.id)
             await author.send(f"✅ Event #{event.id} deleted.")
-            self.log.info(f"Event #{event.id} deleted by {author.username}")
+            self.log.info(f"Event #{event.id} deleted by {getattr(author, 'username', str(author))}")
 
         except asyncio.TimeoutError:
             try:
@@ -284,7 +268,7 @@ class EventManageHandler:
         except asyncio.TimeoutError:
             raise
 
-    async def _re_render_event(self, event_id: int) -> None:
+    async def _re_render_event(self, event_id: str) -> None:
         """Re-fetch event + signups, render, and edit the message in place."""
         event = await self.db.get_event_by_id(event_id)
         if event is None:
@@ -299,7 +283,7 @@ class EventManageHandler:
                 int(self.config.get("bot", "guild_id", "0"))
             )
             member = await guild.fetch_member(int(event.creator_id))
-            creator_name = member.nick or member.username or ""
+            creator_name = member.display_name or member.user.username or ""
         except Exception:
             pass
 

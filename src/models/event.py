@@ -5,8 +5,8 @@ Ratatoskr: Bot Infrastructure
 Event data model for Ratatoskr. Represents a scheduled operation stored
 in SQLite. Pure data class — no fluxer dependency.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
-LAST MODIFIED: 2026-02-28
+FILE VERSION: v1.1.0
+LAST MODIFIED: 2026-03-03
 BOT: Ratatoskr
 CLEAN ARCHITECTURE: Compliant
 ============================================================================
@@ -23,8 +23,8 @@ from typing import Optional
 class Event:
     """Represents a scheduled operation/event."""
 
-    # Database fields
-    id: Optional[int] = None
+    # Database fields — message_id IS the primary key
+    id: str = ""  # Same as message_id (Fluxer snowflake)
     message_id: str = ""
     channel_id: str = ""
     creator_id: str = ""
@@ -60,7 +60,7 @@ class Event:
     def from_row(cls, row: dict) -> Event:
         """Construct an Event from a SQLite row dict."""
         return cls(
-            id=row.get("id"),
+            id=str(row.get("message_id", "")),
             message_id=str(row.get("message_id", "")),
             channel_id=str(row.get("channel_id", "")),
             creator_id=str(row.get("creator_id", "")),

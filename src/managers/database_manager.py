@@ -5,8 +5,8 @@ Ratatoskr: Bot Infrastructure
 DatabaseManager for Ratatoskr. Async SQLite interface via aiosqlite.
 Handles schema creation, event CRUD, and signup tracking.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
-LAST MODIFIED: 2026-02-28
+FILE VERSION: v1.1.0
+LAST MODIFIED: 2026-03-03
 BOT: Ratatoskr
 CLEAN ARCHITECTURE: Compliant
 ============================================================================
@@ -25,8 +25,7 @@ log = logging.getLogger("ratatoskr.database_manager")
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS events (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    message_id      TEXT NOT NULL UNIQUE,
+    message_id      TEXT PRIMARY KEY,
     channel_id      TEXT NOT NULL,
     creator_id      TEXT NOT NULL,
     title           TEXT NOT NULL,
@@ -39,7 +38,7 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE TABLE IF NOT EXISTS signups (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_id        INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    event_id        TEXT NOT NULL REFERENCES events(message_id) ON DELETE CASCADE,
     user_id         TEXT NOT NULL,
     display_name    TEXT NOT NULL,
     role_key        TEXT NOT NULL,
@@ -88,16 +87,15 @@ class DatabaseManager:
     ) -> Event:
         """Insert a new event and return the created Event."""
         assert self._db is not None
-        cursor = await self._db.execute(
+        await self._db.execute(
             """INSERT INTO events (message_id, channel_id, creator_id, title, description, event_time)
                VALUES (?, ?, ?, ?, ?, ?)""",
             (message_id, channel_id, creator_id, title, description, event_time),
         )
         await self._db.commit()
-        row_id = cursor.lastrowid
-        log.debug(f"Created event id={row_id} title='{title}'")
+        log.debug(f"Created event id={message_id} title='{title}'")
         return Event(
-            id=row_id,
+            id=message_id,
             message_id=message_id,
             channel_id=channel_id,
             creator_id=creator_id,
@@ -118,19 +116,11 @@ class DatabaseManager:
             return None
         return Event.from_row(dict(row))
 
-    async def get_event_by_id(self, event_id: int) -> Optional[Event]:
-        """Look up an event by database row ID."""
-        assert self._db is not None
-        cursor = await self._db.execute(
-            "SELECT * FROM events WHERE id = ? AND expired = 0",
-            (event_id,),
-        )
-        row = await cursor.fetchone()
-        if row is None:
-            return None
-        return Event.from_row(dict(row))
+    async def get_event_by_id(self, event_id: str) -> Optional[Event]:
+        """Look up an event by its ID (message_id)."""
+        return await self.get_event_by_message_id(event_id)
 
-    async def update_event(self, event_id: int, **fields: str) -> None:
+    async def update_event(self, event_id: str, **fields: str) -> None:
         """Update one or more fields on an event."""
         assert self._db is not None
         allowed = {"title", "description", "event_time"}
@@ -139,24 +129,26 @@ class DatabaseManager:
             return
         set_clause = ", ".join(f"{k} = ?" for k in to_update)
         values = list(to_update.values()) + [event_id]
-        await self._db.execute(f"UPDATE events SET {set_clause} WHERE id = ?", values)
+        await self._db.execute(
+            f"UPDATE events SET {set_clause} WHERE message_id = ?", values
+        )
         await self._db.commit()
         log.debug(f"Updated event id={event_id}: {list(to_update.keys())}")
 
-    async def mark_event_expired(self, event_id: int) -> None:
+    async def mark_event_expired(self, event_id: str) -> None:
         """Mark an event as expired (soft delete)."""
         assert self._db is not None
         await self._db.execute(
-            "UPDATE events SET expired = 1 WHERE id = ?", (event_id,)
+            "UPDATE events SET expired = 1 WHERE message_id = ?", (event_id,)
         )
         await self._db.commit()
         log.debug(f"Marked event id={event_id} as expired")
 
-    async def mark_reminder_sent(self, event_id: int) -> None:
+    async def mark_reminder_sent(self, event_id: str) -> None:
         """Flag that the 15-minute reminder has been sent."""
         assert self._db is not None
         await self._db.execute(
-            "UPDATE events SET reminder_sent = 1 WHERE id = ?", (event_id,)
+            "UPDATE events SET reminder_sent = 1 WHERE message_id = ?", (event_id,)
         )
         await self._db.commit()
 
@@ -195,7 +187,7 @@ class DatabaseManager:
 
     async def upsert_signup(
         self,
-        event_id: int,
+        event_id: str,
         user_id: str,
         display_name: str,
         role_key: str,
@@ -220,7 +212,7 @@ class DatabaseManager:
             role_key=role_key,
         )
 
-    async def remove_signup(self, event_id: int, user_id: str) -> bool:
+    async def remove_signup(self, event_id: str, user_id: str) -> bool:
         """Remove a user's signup. Returns True if a row was deleted."""
         assert self._db is not None
         cursor = await self._db.execute(
@@ -233,7 +225,7 @@ class DatabaseManager:
             log.debug(f"Removed signup: event={event_id} user={user_id}")
         return deleted
 
-    async def get_signup(self, event_id: int, user_id: str) -> Optional[Signup]:
+    async def get_signup(self, event_id: str, user_id: str) -> Optional[Signup]:
         """Get a specific user's signup for an event."""
         assert self._db is not None
         cursor = await self._db.execute(
@@ -245,7 +237,7 @@ class DatabaseManager:
             return None
         return Signup.from_row(dict(row))
 
-    async def get_signups_for_event(self, event_id: int) -> list[Signup]:
+    async def get_signups_for_event(self, event_id: str) -> list[Signup]:
         """Get all signups for an event, ordered by signup time."""
         assert self._db is not None
         cursor = await self._db.execute(
@@ -255,7 +247,7 @@ class DatabaseManager:
         rows = await cursor.fetchall()
         return [Signup.from_row(dict(r)) for r in rows]
 
-    async def get_signups_for_reminder(self, event_id: int) -> list[Signup]:
+    async def get_signups_for_reminder(self, event_id: str) -> list[Signup]:
         """Get all non-declined signups for reminder DMs."""
         assert self._db is not None
         cursor = await self._db.execute(
@@ -267,7 +259,7 @@ class DatabaseManager:
         rows = await cursor.fetchall()
         return [Signup.from_row(dict(r)) for r in rows]
 
-    async def delete_signups_for_event(self, event_id: int) -> int:
+    async def delete_signups_for_event(self, event_id: str) -> int:
         """Delete all signups for an event. Returns count deleted."""
         assert self._db is not None
         cursor = await self._db.execute(

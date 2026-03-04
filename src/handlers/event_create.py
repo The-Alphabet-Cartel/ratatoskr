@@ -105,11 +105,10 @@ class EventCreateHandler:
 
         title, description, event_time_utc = result
 
-        # Post the event to the event channel
+        # Post a placeholder to get the message_id (which IS the event ID)
         try:
-            event_msg = await self._post_event(
-                title, description, event_time_utc, author
-            )
+            channel = await self.bot.fetch_channel(int(self._event_channel_id))
+            event_msg = await channel.send("⏳ Creating event...")
         except Exception as e:
             self.log.error(f"Failed to post event: {e}")
             try:
@@ -118,15 +117,32 @@ class EventCreateHandler:
                 pass
             return
 
-        # Save to database
+        event_id = str(event_msg.id)
+
+        # Save to database — message_id is the primary key
         event = await self.db.create_event(
-            message_id=str(event_msg.id),
+            message_id=event_id,
             channel_id=str(self._event_channel_id),
             creator_id=str(author.id),
             title=title,
             description=description,
             event_time=event_time_utc.isoformat(),
         )
+
+        # Render the full event post with the real ID and edit the message
+        creator_name = await self._get_display_name(author)
+        post_text = render_event_post(
+            event=event,
+            signups=[],
+            roles_config=self.roles_config,
+            creator_display_name=creator_name,
+            tz_name=self._tz_name,
+            time_format=self._time_format,
+        )
+        try:
+            await event_msg.edit(content=post_text)
+        except Exception as e:
+            self.log.warning(f"Could not edit event post: {e}")
 
         # Seed reactions
         await self._seed_reactions(event_msg)
@@ -140,7 +156,7 @@ class EventCreateHandler:
         except Exception:
             pass
 
-        self.log.info(f"Event created: '{title}' by {author.username} (id={event.id})")
+        self.log.info(f"Event created: '{title}' by {author.username} (id={event_id})")
 
     # =========================================================================
     # DM Wizard
@@ -233,39 +249,8 @@ class EventCreateHandler:
             raise
 
     # =========================================================================
-    # Posting and reactions
+    # Reactions
     # =========================================================================
-
-    async def _post_event(
-        self, title: str, description: str, event_time_utc: datetime, author
-    ) -> fluxer.Message:
-        """Post the formatted event to the event channel and return the message."""
-        from src.models.event import Event
-
-        # Build a temporary Event for rendering
-        temp_event = Event(
-            title=title,
-            description=description,
-            event_time=event_time_utc.isoformat(),
-        )
-
-        # Get creator display name from server
-        creator_name = await self._get_display_name(author)
-
-        # Render the post
-        post_text = render_event_post(
-            event=temp_event,
-            signups=[],
-            roles_config=self.roles_config,
-            creator_display_name=creator_name,
-            tz_name=self._tz_name,
-            time_format=self._time_format,
-        )
-
-        # Send to event channel
-        channel = await self.bot.fetch_channel(int(self._event_channel_id))
-        event_msg = await channel.send(post_text)
-        return event_msg
 
     async def _seed_reactions(self, message: fluxer.Message) -> None:
         """Add all role emoji + declined emoji as reactions to the event post."""
@@ -309,7 +294,7 @@ class EventCreateHandler:
                 int(self.config.get("bot", "guild_id", "0"))
             )
             member = await guild.fetch_member(int(user.id))
-            return member.nick or member.username or str(user)
+            return member.display_name or member.user.username or str(user)
         except Exception as e:
             self.log.warning(f"Could not fetch display name for {user.id}: {e}")
             return str(user)
