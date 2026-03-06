@@ -149,6 +149,7 @@ class EventCreateHandler:
 
         # Ping the configured role (if set)
         ping_role_id = self.config.get("events", "ping_role_id", "")
+        self.log.debug(f"Ping role ID config value: '{ping_role_id}'")
         if ping_role_id:
             try:
                 await channel.send(f"<@&{ping_role_id}> New event posted: **{title}**")
