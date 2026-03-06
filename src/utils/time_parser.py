@@ -109,20 +109,20 @@ def get_countdown(utc_dt: datetime) -> str:
 
     delta = utc_dt - now
     total_seconds = int(delta.total_seconds())
-    days = delta.days
-    hours = total_seconds // 3600
-    minutes = total_seconds // 60
+    total_hours = total_seconds // 3600
+    total_minutes = total_seconds // 60
 
-    if days > 1:
+    if total_hours >= 48:
+        days = total_hours // 24
         return f"in {days} days"
-    elif days == 1:
-        return "in 1 day"
-    elif hours > 1:
-        return f"in {hours} hours"
-    elif hours == 1:
+    elif total_hours >= 24:
+        return "in ~1 day"
+    elif total_hours >= 2:
+        return f"in {total_hours} hours"
+    elif total_hours == 1:
         return "in 1 hour"
-    elif minutes > 1:
-        return f"in {minutes} minutes"
+    elif total_minutes > 1:
+        return f"in {total_minutes} minutes"
     else:
         return "starting soon"
 
