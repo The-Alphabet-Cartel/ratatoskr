@@ -147,6 +147,14 @@ class EventCreateHandler:
         # Seed reactions
         await self._seed_reactions(event_msg)
 
+        # Ping the configured role (if set)
+        ping_role_id = self.config.get("events", "ping_role_id", "")
+        if ping_role_id:
+            try:
+                await channel.send(f"<@&{ping_role_id}> New event posted: **{title}**")
+            except Exception as e:
+                self.log.warning(f"Could not send role ping: {e}")
+
         # Confirm to creator
         try:
             await author.send(
